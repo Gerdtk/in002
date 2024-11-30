@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Usuario</title>
+    <link rel="stylesheet" href="AgregarUsuario.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="UTCJSUS.png" alt="Logo" class="logo"> 
+        </div>
+        <div class="button-container">
+            <button onclick="window.history.back()" id="inicial" class="inicio">🏠</button>
+        </div>
+    </header>
+    <div class="container"> 
+        <h1>Nuevo Usuario</h1>
+        <form action="/registrar" method="POST" onsubmit="mostrarMensaje(event)">
+            <!-- label for="idusuario">IdUsuario</label -->
+            <!-- input type="text" id="idusuario" name="IdUsuario" placeholder="Ingresa ID de usuario" required -->
+            <br>
+            <label for="usuario">Usuario</label>
+            <input type="text" id="usuario" name="Usuario" placeholder="Ingresa usuario" required>
+            <br>
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="Cont" placeholder="Ingresa contraseña" required>
+            <br>
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" name="Nombre" required>
+            <label for="apellido1">Apellido Paterno</label>
+            <input type="text" id="apellido1" name="Apellido1" required>
+            <label for="apellido2">Apellido Materno</label>
+            <input type="text" id="apellido2" name="Apellido2" required>
+            <label for="fecha">Fecha de Creación</label>
+            <input type="date" id="fecha" name="FechaAgregacion" required>
+            <label for="rol">Rol</label>
+            <input type="text" id="rol" name="Rol" required>
+            <button type="submit">Crear</button>
+        </form>
+    </div>
+
+    <script>
+        function mostrarMensaje(event) {
+            alert("Usuario creado con éxito");
+            // Si quieres redirigir después de mostrar el mensaje, puedes usar:
+            window.location.href = '/'; // Redirige al inicio
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Obtener la fecha actual en formato YYYY-MM-DD
+            const fechaHoy = new Date().toISOString().slice(0, 10);  // "2024-11-29"
+
+            // Asignar la fecha al campo de fecha de creación
+            document.querySelector('#fecha').value = fechaHoy;
+
+            // Asignar "General" como valor predeterminado para el rol
+            document.querySelector('#rol').value = 'General';  // Esto se puede omitir si el valor 'General' ya está seleccionado
+        });
+    </script>
+</body>
+</html>

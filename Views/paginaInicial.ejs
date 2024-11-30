@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Opciones</title>
+    <link rel="stylesheet" href="paginaInicia.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="UTCJSUS.png" alt="Logo" class="logo"> 
+        </div>
+        <div class="button-container">
+        <button id="PestEm">︙</button>
+        <div id="miModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <button onclick="window.location.href='/Reporte.html'">Generar reporte</button>
+                <br> <br>
+                <a href="/"><button>Cerrar sesión</button></a>
+            </div>
+        </div>
+        </div>
+        
+        <script>
+            var modal = document.getElementById("miModal");
+            var btn = document.getElementById("PestEm");
+            var span = document.getElementsByClassName("close")[0];
+        
+            btn.onclick = function() {
+                modal.style.display = "block";
+            }
+        
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+        
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        </script>
+        
+    </header>
+    <div class="container">
+        <button class="option">
+            <div onclick="window.location.href='/mobi';" class="icon">
+                <span>👢</span>
+            </div>
+            <div class="label">Mobiliario</div>
+        </button>
+        <button class="option">
+            <div onclick="window.location.href='/plant';" class="icon">
+                <span>🌱</span>
+            </div>
+            <div class="label">Planta</div>
+        </button>
+    </div>
+</body>
+</html>

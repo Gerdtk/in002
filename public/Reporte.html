@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar Reporte</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #ccf6cc;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            margin: 0;
+        }
+                
+        header {
+            position: relative;
+            width: 100%;
+            background-color: #71ae7a; 
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-container {
+            display: flex; 
+            align-items: center;
+        }
+
+        .logo {
+            height: 60px; 
+            border-radius: 30px; 
+        }
+
+        .inicio {
+            padding: 10px 15px;
+            font-size: 2em;
+            background-color: #71ae7a;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        
+        h1 {
+            font-size: 2em;
+        }
+        
+        section {
+            margin: 1.5em auto;
+            padding: 1.5em;
+            width: 80%;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            font-size: 1.5em;
+            color: #4CAF50;
+            margin-bottom: 0.5em;
+        }
+        button {
+            padding: 10px;
+            background-color: #666;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #9e6c87;
+            transform: scale(1.05)
+        }
+        
+        footer {
+            display: flex;
+            justify-content: space-around;
+            background-color: #71ae7a;
+            padding: 10px 0;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            border-top: 1px solid #ccc;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="UTCJSUS.png" alt="Logo" class="logo">
+        </div>
+        <button onclick="window.history.back()" id="inicial" class="inicio">🏠</button>
+    </header>
+    <h1>Generar reporte</h1>
+    <section id="reporte-mobiliario">
+        <h2>Sección de Mobiliario</h2>
+        <button onclick="generarReporteMobiliario()">Generar Reporte</button>
+
+    </section>
+    <section id="reporte-planta">
+        <h2>Sección de Planta</h2>
+        <button onclick="generarReportePlantas()">Generar Reporte</button>
+    </section>
+    <section id="reporte-planta">
+        <h2>Sección de Salidas Plantas</h2>
+        <button onclick="generarReporteSalidas()">Generar Reporte</button>
+    </section>
+
+    <script>
+      async function generarReporteMobiliario() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Obtener datos desde la API
+    const response = await fetch('/api/mobiliario');
+    const data = await response.json();
+
+    const fecha = new Date().toLocaleString();
+
+
+    // Configurar el PDF
+    doc.setFont('times', 'normal');
+    doc.setFontSize(18);
+    doc.setTextColor(113, 174, 122);
+    doc.text("Reporte de Mobiliario", 10, 10);
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Fecha: ${fecha}`, 10, 20);
+
+    
+    doc.addImage('UTCJSUS.png', 'PNG', 150, 5, 30, 30);  
+    // Preparar los datos para la tabla
+    const headers = ["No.Serie", "Nombre", "Fecha de agregado", "Cantidad", "Costo", "Estado"];
+    const body = data.map(item => [
+        item.NoId,
+        item.NombreMobiliario,  
+        item.FechaAgregacion, 
+        item.Cantidad,  
+        `$${item.Costo}`,  
+        item.EstadoRequerido
+    ]);
+
+    // Generación del PDF con estilo en la tabla
+    doc.autoTable({
+        head: [headers],
+        body: body,
+        startY: 40, 
+        theme: 'striped',
+        headStyles: {
+            fillColor: [113, 174, 122],  
+            textColor: [255, 255, 255],  
+            fontSize: 12,
+            fontStyle: 'bold',
+        },
+        bodyStyles: {
+            fontSize: 10,
+            halign: 'center',  
+        },
+        alternateRowStyles: {
+            fillColor: [204, 246, 204],  
+        },
+    });
+
+    // Guardar PDF
+    doc.save(`Reporte_mobiliario_${fecha.replace(/[/:]/g, '-')}.pdf`);
+}
+
+
+
+async function generarReporteSalidas() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Obtener datos desde la API
+    const response = await fetch('/api/plantas/log');
+    const data = await response.json();
+
+    const fecha = new Date().toLocaleString();
+
+    // Configurar el PDF
+    doc.setFont('times', 'normal');
+    doc.setFontSize(18);
+    doc.setTextColor(113, 174, 122);
+    doc.text("Reporte de Plantas", 10, 10);
+
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); 
+    doc.text(`Fecha: ${fecha}`, 10, 20);
+
+    // Agregar imagen al PDF
+    
+    doc.addImage('UTCJSUS.png', 'PNG', 150, 5, 30, 30);   
+
+    // Preparar los datos para la tabla
+    const headers = ["Nombre de planta", "Fecha de modificacion", "accion", "modificacion"];
+    const body = data.map(item => [ 
+        item.NombrePlanta,  
+        item.FechaModificacion,  
+        item.Accion
+    ]);
+
+    // Generación del PDF con estilo en la tabla
+    doc.autoTable({
+        head: [headers],
+        body: body,
+        startY: 40,  // Ajustar el inicio de la tabla después de la imagen
+        theme: 'striped',
+        headStyles: {
+            fillColor: [113, 174, 122],  // Fondo verde en las cabeceras
+            textColor: [255, 255, 255],  // Texto blanco en las cabeceras
+            fontSize: 12,
+            fontStyle: 'bold',
+        },
+        bodyStyles: {
+            fontSize: 10,
+            halign: 'center',  // Alineación centrada
+        },
+        alternateRowStyles: {
+            fillColor: [204, 246, 204],  // Color verde claro en filas alternas
+        },
+    });
+
+    // Guardar PDF
+    doc.save(`Reporte_plantas_${fecha.replace(/[/:]/g, '-')}.pdf`);
+}
+
+async function generarReportePlantas() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Obtener datos desde la API
+    const response = await fetch('/api/plantas');
+    const data = await response.json();
+
+    const fecha = new Date().toLocaleString();
+
+    // Configurar el PDF
+    doc.setFont('times', 'normal');
+    doc.setFontSize(18);
+    doc.setTextColor(113, 174, 122);
+    doc.text("Reporte de Plantas", 10, 10);
+
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); 
+    doc.text(`Fecha: ${fecha}`, 10, 20);
+
+    // Agregar imagen al PDF
+    
+    doc.addImage('UTCJSUS.png', 'PNG', 150, 5, 30, 30);   
+
+    // Preparar los datos para la tabla
+    const headers = ["No. Serie", "Nombre de planta", "Fecha de germinación", "Cantidad", "Estado"];
+    const body = data.map(item => [
+        item.NoId,  
+        item.NombrePlanta,  
+        item.FechaAgregacion,  
+        item.Cantidad,  
+        item.EstadoRequerido
+    ]);
+
+    // Generación del PDF con estilo en la tabla
+    doc.autoTable({
+        head: [headers],
+        body: body,
+        startY: 40,  // Ajustar el inicio de la tabla después de la imagen
+        theme: 'striped',
+        headStyles: {
+            fillColor: [113, 174, 122],  // Fondo verde en las cabeceras
+            textColor: [255, 255, 255],  // Texto blanco en las cabeceras
+            fontSize: 12,
+            fontStyle: 'bold',
+        },
+        bodyStyles: {
+            fontSize: 10,
+            halign: 'center',  // Alineación centrada
+        },
+        alternateRowStyles: {
+            fillColor: [204, 246, 204],  // Color verde claro en filas alternas
+        },
+    });
+
+    // Guardar PDF
+    doc.save(`Reporte_plantas_${fecha.replace(/[/:]/g, '-')}.pdf`);
+}
+    </script>
+    
+</body>
+</html>

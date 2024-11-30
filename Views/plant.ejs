@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Plantas</title>
+    <link rel="stylesheet" href="plantas.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="UTCJSUS.png" alt="Logo" class="logo">
+        </div>
+        <div class="button-group">
+            <button onclick="window.history.back()" id="inicial" class="inicio">🏠</button>
+        </div>
+    </header>
+
+    <div class="search-container">
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Buscar por nombre." oninput="filterTable()">
+            <span class="search-icon">🔍</span>
+        </div>
+        
+        <table id="plantTable">
+            <thead>
+                <tr>
+                    <th>No. Serie</th>
+                    <th>Nombre de planta</th>
+                    <th>Fecha de germinación</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <footer>
+        <div class="button-container"><button class="footer-btn"><span>🌱</span> Planta</button></div>
+        <div class="button-container">
+            <button class="footer-btn" onclick="openModal('modalAgregar')"><span>➕</span>Agregar</button>
+        </div>
+        <div class="button-container">
+            <button class="footer-btn" onclick="handleEditModal()"><span>✏️</span> Editar</button>
+        </div>        
+        <div class="button-container">
+            <button class="footer-btn" onclick="openModal('modalEliminar')"><span>🗑️</span> Eliminar</button>
+        </div>
+    </footer>
+
+    <!-- Modal Agregar -->
+    <div id="modalAgregar" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modalAgregar')">&times;</span>
+            <h2>Agregar Planta</h2>
+            <div class="container">
+            <form id="formAgregar">
+                <label>No. Serie:</label>
+                <input type="text" name="noSerie" required>
+                <label>Nombre:</label>
+                <input type="text" name="nombre" required>
+                <label>Cantidad:</label>
+                <input type="number" name="Cantidad" min="1" required>
+                <button type="submit">Guardar</button>
+            </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar -->
+    <div id="modalEditar" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modalEditar')">&times;</span>
+            <h2>Editar Planta</h2>
+            <div class="container">
+            <form id="formEditar">
+                <label>No. Serie:</label>
+                <span id="noSerie">-</span><br> 
+
+                <label>Nombre:</label>
+                <span id="nameField">-</span><br> 
+
+                <label for="estado">Estado:</label>
+                <select name="estado" id="estado">
+                    <option value="Donado">Donado</option>
+                    <option value="Plantado">Plantado</option>
+                    <option value="Muerto">Muerto</option>
+                </select>
+
+                <button type="submit">Guardar</button>
+            </form>
+        </div>
+        </div>
+    </div>
+
+    <!-- Modal Eliminar -->
+    <div id="modalEliminar" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modalEliminar')">&times;</span>
+            <p>Eliminar</p>
+            <div class="container">
+                <form id="formEliminar">
+                    <label for="nameField">Nombre</label>
+                    <span id="nameField">-</span><br>
+                    <label for="dateField">Fecha de germinación</label>
+                    <span id="dateField">-</span><br>
+                    <label for="stateField">Estado</label>
+                    <span id="stateField">-</span><br>
+                    <label for="noSerieE">No. Serie</label>
+                    <input type="text" name="noSerieE" readonly required>
+                    <button type="submit">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+
+    <script>
+        // Abrir y cerrar modales
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = "flex";
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        // Filtrar tabla
+        function filterTable() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#plantTable tbody tr');
+            rows.forEach(row => {
+                const match = Array.from(row.cells).some(cell => cell.textContent.toLowerCase().includes(input));
+                row.style.display = match ? '' : 'none';
+            });
+        }
+
+        // Obtener datos desde el servidor
+        let selectedRowData = null;
+    // Función para obtener datos desde el servidor y llenar la tabla
+        async function fetchPlantas() {
+            try {
+                const response = await fetch('/api/plant');
+                const data = await response.json();
+                const tableBody = document.querySelector('#plantTable tbody');
+                tableBody.innerHTML = '';
+
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td data-label="No. Serie">${item.NoSerie}</td>
+                        <td data-label="Nombre">${item.Nombre}</td>
+                        <td data-label="Fecha">${item.Fecha}</td>
+                        <td data-label="Estado">${item.Estado}</td>
+                    `;
+                    row.addEventListener('click', () => selectRow(item, row)); 
+
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error al cargar los datos:', error);
+            }
+        }
+
+        // Seleccionar fila y actualizar formularios
+        function selectRow(item, row) {
+            // Resaltar la fila seleccionada
+            const rows = document.querySelectorAll('#plantTable tbody tr');
+            rows.forEach(r => r.classList.remove('selected'));  
+            row.classList.add('selected'); 
+
+            selectedRowData = item;
+
+            // Rellenar formularios de editar y eliminar
+            document.querySelector('#modalEliminar input[name="noSerieE"]').value = item.NoSerie;
+            document.querySelector('#modalEliminar #nameField').textContent = item.Nombre;
+            document.querySelector('#modalEliminar #dateField').textContent = item.Fecha;
+            document.querySelector('#modalEliminar #stateField').textContent = item.Estado;
+            fillEditForm(item);
+        }
+
+        function fillEditForm(item) {
+            document.getElementById('noSerie').textContent = item.NoSerie;
+            document.getElementById('nameField').textContent = item.Nombre;
+            document.getElementById('estado').value = item.Estado;
+        }
+
+        function handleEditModal() {
+            if (!selectedRowData) {
+                alert('Por favor, seleccione una fila para editar.');
+                return;
+            }
+            fillEditForm(selectedRowData);
+            openModal('modalEditar');
+        }
+
+        // Manejo del formulario "Agregar"
+        document.getElementById('formAgregar').onsubmit = async (e) => {
+            e.preventDefault();
+            /* const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            data.Cantidad = parseInt(data.Cantidad); */
+            const NoSerie = document.querySelector('#modalAgregar input[name="noSerie"]').value;
+            const Nombre = document.querySelector('#modalAgregar input[name="nombre"]').value;
+            const Cantidad = parseInt(document.querySelector('#modalAgregar input[name="Cantidad"]').value);
+
+            const Fecha = new Date();
+            const fechaMySQL = Fecha.toISOString().slice(0, 19).replace("T", " "); // Convierte a formato YYYY-MM-DD HH:MM:SS
+            const Estado = 'Germinando'; // Estado por defecto
+
+        let contador = 1;  // Comenzamos con el número 1, puedes almacenarlo en la base de datos si quieres mantener la secuencia entre sesiones
+
+        function generarNoSerie() {
+        // Convertir el contador a una cadena con ceros a la izquierda para tener siempre 5 dígitos
+            const noSerie = contador.toString().padStart(5, '0');  // Esto convertirá 1 en "00001", 2 en "00002", etc.
+            contador++;  // Incrementar el contador para el siguiente número de serie
+        return noSerie;
+    }
+
+
+    // Crear un arreglo de objetos para los registros
+    const plantas = [];
+    for (let i = 0; i < Cantidad; i++) {
+
+        const uniqueNoSerie = generarNoSerie();
+        plantas.push({
+            NoId: uniqueNoSerie, // El No. Serie podría diferenciarse por un índice
+            NombrePlanta: Nombre,
+            cantidad: 1,
+            FechaAgregacion: fechaMySQL,
+            EstadoRequerido: Estado
+        });
+    }
+        console.log(plantas);
+
+            try {
+                const response = await fetch('/api/plant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(plantas),
+                });
+                if (response.ok) {
+                    alert('Planta agregada correctamente');
+                    fetchPlantas();
+                    closeModal('modalAgregar');
+                } else {
+                    alert('Error al agregar planta');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        };
+
+        // Manejo del formulario "Editar"
+document.getElementById('formEditar').onsubmit = async (e) => {
+    e.preventDefault();
+
+    if (!selectedRowData) {
+        alert('Por favor, seleccione una planta para editar.');
+        return;
+    }
+
+    const estado = document.getElementById('estado').value; 
+    if (!estado) {
+        alert('Debe seleccionar un estado.');
+        return;
+    }
+
+    const noSerie = selectedRowData.NoSerie; 
+    const updatedData = {
+        EstadoRequerido: estado,    
+        NoSerie: noSerie   
+    };
+
+    try {
+       const response = await fetch(`/api/plant/${noSerie}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData), 
+        });
+
+       if (response.ok) {
+            alert('Planta editada correctamente');
+            fetchPlantas();  
+            closeModal('modalEditar');  
+        } else {
+            alert('Error al editar planta');
+        }
+    } catch (error) {
+        console.error('Error al editar planta:', error);
+        alert('Error al editar planta');
+    }
+};
+
+        // Manejo del formulario "Eliminar"
+        document.getElementById('formEliminar').onsubmit = async (e) => {
+            e.preventDefault();
+            const noSerie = e.target.noSerieE.value;
+
+            if (!noSerie) {
+                alert("No se ha seleccionado un número de serie.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/plant/${noSerie}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    alert('Planta eliminada correctamente');
+                    fetchPlantas();
+                    closeModal('modalEliminar');
+                } else {
+                    alert('Error al eliminar planta');
+                }
+            } catch (error) {
+                console.error('Error al eliminar planta:', error);
+                alert('Error al eliminar planta');
+            }
+        };
+
+        // Cargar plantas al iniciar
+        fetchPlantas();
+    </script>
+</body>
+</html>

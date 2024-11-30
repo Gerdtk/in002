@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de mobiliario</title>
+    <link rel="stylesheet" href="mobiliario.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="UTCJSUS.png" alt="Logo" class="logo">
+        </div>
+        <div class="button-group">
+            <button onclick="window.history.back()" id="inicial" class="inicio">🏠</button>
+        </div>
+    </header>
+
+    <div class="search-container">
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Buscar por nombre." oninput="filterTable()">
+            <span class="search-icon">🔍</span>
+        </div>
+        
+        <table id="mobiTable">
+            <thead>
+                <tr>
+                    <th>No. Serie</th>
+                    <th>Nombre</th>
+                    <th>Costo</th>
+                    <th>Fecha de agregado</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <footer>
+        <div class="button-container">
+            <button class="footer-btn" onclick="openModal('modalPlanta')"><span>👢</span> Mobiliario</button>
+        </div>
+        <div class="button-container">
+            <button class="footer-btn" onclick="openModal('modalAgregar')"><span>➕</span>Agregar</button>
+        </div>
+        <div class="button-container">
+            <button class="footer-btn" onclick="handleEditModal()"><span>✏️</span> Editar</button>
+        </div>        
+        <div class="button-container">
+            <button class="footer-btn" onclick="openModal('modalEliminar')"><span>🗑️</span> Eliminar</button>
+        </div>
+    </footer>
+
+    <!-- Modal Agregar -->
+    <div id="modalAgregar" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modalAgregar')">&times;</span>
+            <h2>Agregar Mobiliario</h2>
+            <div class="container">
+                <form id="formAgregar">
+                    <label>No. Serie:</label>
+                    <input type="text" name="noSerie" required>
+                    <label>Nombre:</label>
+                    <input type="text" name="nombre" required>
+                    <label>Cantidad:</label>
+                    <input type="number" name="cantidad" min="1" required>
+                    <label>Costo:</label>
+                    <input type="number" name="costo" step="0.01" required>
+                    <button type="submit">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar -->
+<div id="modalEditar" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('modalEditar')">&times;</span>
+        <h2>Editar Mobiliario</h2>
+        <div class="container">
+            <form id="formEditar">
+                <label>No. Serie:</label>
+                <span id="noSerie">-</span><br> <!-- Solo visualización -->
+
+                <label>Nombre:</label>
+                <span id="nameField">-</span><br> <!-- Solo visualización -->
+
+                <label>Costo:</label>
+                <span id="costoField">-</span><br> <!-- Solo visualización -->
+
+                <label for="estado">Estado:</label>
+                <select name="estado" id="estado">
+                    <option value="Funcionando">Funcionando</option>
+                    <option value="Descompuesto">Descompuesto</option>
+                    <option value="Agotado">Agotado</option>
+                </select>
+
+                <button type="submit">Guardar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Modal Eliminar -->
+    <div id="modalEliminar" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modalEliminar')">&times;</span>
+            <p>Eliminar</p>
+            <div class="container">
+                <form>
+                    <label for="nameField">Nombre</label>
+                    <span id="nameField">-</span><br>
+                    <label for="dateField">Fecha de agregado</label>
+                    <span id="dateField">-</span><br>
+                    <label for="stateField">Estado</label>
+                    <span id="stateField">-</span><br>
+                    <label for="noSerieE">No. Serie</label>
+                    <input type="text" name="noSerieE" readonly required>
+                    <button type="submit">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Abrir y cerrar modales
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = "flex";
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        // Filtrar tabla
+        function filterTable() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#mobiTable tbody tr');
+            rows.forEach(row => {
+                const match = Array.from(row.cells).some(cell => cell.textContent.toLowerCase().includes(input));
+                row.style.display = match ? '' : 'none';
+            });
+        }
+
+        // Obtener datos desde el servidor
+        let selectedRowData = null;
+
+        async function fetchMobiliario() {
+            try {
+                const response = await fetch('/api/mobi'); // Petición a la API
+                const data = await response.json();
+
+                const tableBody = document.querySelector('#mobiTable tbody');
+                tableBody.innerHTML = ''; // Limpia la tabla antes de llenarla
+
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td data-label="No. Serie">${item.NoSerie}</td>
+                        <td data-label="Nombre">${item.Nombre}</td>
+                        <td data-label="Costo">${item.Costo}</td>
+                        <td data-label="Fecha">${item.Fecha}</td>
+                        <td data-label="Estado">${item.Estado}</td>
+                    `;
+
+                    row.addEventListener('click', () => {
+                        selectedRowData = item;
+
+                        const rows = document.querySelectorAll('#mobiTable tbody tr');
+                        rows.forEach(row => row.classList.remove('selected'));
+                        row.classList.add('selected');
+
+                        document.querySelector('#modalEliminar input[name="noSerieE"]').value = item.NoSerie;
+                        document.querySelector('#modalEliminar #nameField').textContent = item.Nombre;
+                        document.querySelector('#modalEliminar #dateField').textContent = item.Fecha;
+                        document.querySelector('#modalEliminar #stateField').textContent = item.Estado;
+
+                        fillEditForm(item);
+                    });
+
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error al cargar los datos:', error);
+            }
+        }
+
+
+        document.querySelector('#modalAgregar form').onsubmit = async (e) => {
+    e.preventDefault();
+
+    const NoSerie = document.querySelector('#modalAgregar input[name="noSerie"]').value;
+    const Nombre = document.querySelector('#modalAgregar input[name="nombre"]').value;
+    const Cantidad = parseInt(document.querySelector('#modalAgregar input[name="cantidad"]').value);
+    const costo = parseFloat(document.querySelector('#modalAgregar input[name="costo"]').value);
+
+    const Fecha = new Date();
+    const fechaMySQL = Fecha.toISOString().slice(0, 19).replace("T", " "); // Convierte a formato YYYY-MM-DD HH:MM:SS
+    const Estado = 'Funcionando'; // Estado por defecto
+
+    let contador = 1;  // Comenzamos con el número 1, puedes almacenarlo en la base de datos si quieres mantener la secuencia entre sesiones
+
+    function generarNoSerie() {
+        // Convertir el contador a una cadena con ceros a la izquierda para tener siempre 5 dígitos
+        const noSerie = contador.toString().padStart(5, '0');  // Esto convertirá 1 en "00001", 2 en "00002", etc.
+        contador++;  // Incrementar el contador para el siguiente número de serie
+        return noSerie;
+    }
+
+
+    // Crear un arreglo de objetos para los registros
+    const mobiliario = [];
+    for (let i = 0; i < Cantidad; i++) {
+
+        const uniqueNoSerie = generarNoSerie();
+        mobiliario.push({
+            NoId: uniqueNoSerie, // El No. Serie podría diferenciarse por un índice
+            NombreMobiliario: Nombre,
+            Cantidad: 1, // Como generamos los ítems por separado, cada uno tiene cantidad 1
+            Costo: costo,
+            FechaAgregacion: fechaMySQL,
+            EstadoRequerido: Estado
+        });
+    }
+
+    try {
+        // Enviar los datos al backend
+        const response = await fetch('/api/mobi', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(mobiliario)
+        });
+
+        if (response.ok) {
+            // Aquí puedes actualizar la UI o hacer algo después de agregar
+            alert('Mobiliario agregado correctamente');
+            closeModal('modalAgregar');
+            fetchMobiliario(); // Recargar la tabla con los nuevos datos
+        } else {
+            alert('Error al agregar mobiliario');
+        }
+    } catch (error) {
+        console.error('Error en la petición:', error);
+        alert('Error al agregar mobiliario');
+    }
+    }
+        // Llenar el formulario de edición con los datos seleccionados
+function fillEditForm(item) {
+    // Mostrar No. Serie, Nombre y Costo (solo visualización)
+    document.getElementById('noSerie').textContent = item.NoSerie;
+    document.getElementById('nameField').textContent = item.Nombre;
+    document.getElementById('costoField').textContent = item.Costo;
+
+    // Mostrar el estado actual en el campo de selección
+    document.getElementById('estado').value = item.Estado;
+}
+
+        // Abrir el modal de edición solo si hay un elemento seleccionado
+        function handleEditModal() {
+            const selectedRow = document.querySelector('#mobiTable tr.selected');
+            if (selectedRow) {
+                const item = {
+                    NoSerie: selectedRow.cells[0].textContent,
+                    Nombre: selectedRow.cells[1].textContent,
+                    Costo: selectedRow.cells[2].textContent,
+                    Estado: selectedRow.cells[3].textContent
+                };
+                fillEditForm(item);
+                openModal('modalEditar');
+            } else {
+                alert('Por favor, seleccione una fila para editar.');
+            }
+        }
+
+        // Manejo del formulario "Editar"
+        document.querySelector('#formEditar').onsubmit = async (e) => {
+            e.preventDefault();
+
+            const noSerie = document.getElementById('noSerie').textContent;
+            const estado = document.getElementById('estado').value;
+
+            const mobiliario = {
+                NoId: noSerie,
+                EstadoRequerido: estado
+            };
+
+            try {
+                const response = await fetch(`/api/mobi/${noSerie}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(mobiliario)
+                });
+
+                if (response.ok) {
+                    alert('Estado actualizado correctamente');
+                    fetchMobiliario();
+                    closeModal('modalEditar');
+                } else {
+                    alert('Error al actualizar estado');
+                }
+            } catch (error) {
+                console.error('Error al actualizar estado:', error);
+                alert('Error al actualizar estado');
+            }
+        };
+        document.querySelector('#modalEliminar form').onsubmit = async (e) => {
+    e.preventDefault();
+
+    const noSerie = document.querySelector('#modalEliminar input[name="noSerieE"]').value;
+
+    try {
+        const response = await fetch(`/api/mobi/${noSerie}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert('Mobiliario eliminado correctamente');
+            fetchMobiliario();  // Recargar la tabla
+            closeModal('modalEliminar');
+        } else {
+            alert('Error al eliminar mobiliario');
+        }
+    } catch (error) {
+        console.error('Error al eliminar mobiliario:', error);
+        alert('Error al eliminar mobiliario');
+    }
+};
+
+        // Inicializar la tabla
+        fetchMobiliario();
+    </script>
+</body>
+</html>
