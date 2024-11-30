@@ -19,8 +19,8 @@ class Server{
     conectarBd(){
         this.con = mysql.createPool({
             host: "localhost",
-            user: "root",
-            password: "Sitio123",
+            user: "Admin",
+            password: "Sus50!",
             database: "pdr01"
         });
 
