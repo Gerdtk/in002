@@ -5,18 +5,17 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 
-class Server{
-    constructor(){
+class Server {
+    constructor() {
         this.app = express();
-        this.port = process.env.PORT;
+        this.port = process.env.PORT || 3000;
 
+        this.conectarBd(); // Conexión primero
         this.middlewares();
         this.routes();
         this.listen();
-        this.conectarBd();
-
     }
-    conectarBd(){
+    conectarBd() {
         this.con = mysql.createPool({
             host: "localhost",
             user: "Admin",
