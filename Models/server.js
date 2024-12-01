@@ -16,7 +16,13 @@ class Server {
         this.conectarBd();
         this.listen();
     }
-
+const connection = mysql.createPool({
+  host: 'autorack.proxy.rlwy.net',
+  port: 36407,
+  user: 'root',
+  password: 'Integradora',
+  database: 'railway'
+});
 
         /* this.con.connect(function(err) {
         if (err) throw err;
@@ -37,14 +43,7 @@ class Server {
             cookie: { secure: false }
         }));
     }
-conectarBd() {
-        this.connection = mysql.createPool({
-            host: 'autorack.proxy.rlwy.net',
-            port: 36407,
-            user: 'root',
-            password: 'Integradora',
-            database: 'railway',
-        });
+
 
         // Probar la conexión
         this.connection.getConnection((err) => {
