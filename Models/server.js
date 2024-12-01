@@ -16,13 +16,13 @@ class Server{
         this.conectarBd();
 
     }
-    conectarBd(){
-        this.con = mysql.createPool({
-            host: "localhost",
-            user: "Admin",
-            password: "Sus50!",
-            database: "pdr01"
-        });
+    const connection = mysql.createPool({
+  host: 'autorack.proxy.rlwy.net', // Cambia localhost por el host remoto
+  port: 36407,
+  user: 'root',
+  password: 'Integradora',
+  database: 'railway'
+});
 
 
         /* this.con.connect(function(err) {
