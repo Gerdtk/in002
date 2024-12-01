@@ -18,7 +18,7 @@ class Server {
     }
 
     // Configura la conexión a la base de datos
-    conectarBd() {
+   conectarBd() {
         this.connection = mysql.createPool({
             host: 'autorack.proxy.rlwy.net',
             port: 36407,
@@ -36,6 +36,7 @@ class Server {
             }
         });
     }
+
 
         /* this.con.connect(function(err) {
         if (err) throw err;
