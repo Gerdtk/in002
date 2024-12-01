@@ -16,11 +16,11 @@ class Server{
         this.conectarBd();
 
     }
- conectarBd(){
+    conectarBd(){
         this.con = mysql.createPool({
             host: "localhost",
-            user: "root",
-            password: "Sitio123",
+            user: "Admin",
+            password: "Sus50!",
             database: "pdr01"
         });
 
@@ -44,7 +44,6 @@ class Server{
             cookie: { secure: false }
         }));
     }
-
     routes(){
         this.app.post("/login", (req, res) => {
             let user = req.body.usuario;
@@ -383,6 +382,8 @@ class Server{
         });
     }
 
+}
+module.exports = Server;
 }
 module.exports = Server;
 
