@@ -16,13 +16,14 @@ class Server{
         this.conectarBd();
 
     }
-const connection = mysql.createPool({
-  host: 'autorack.proxy.rlwy.net',
-  port: 36407,
-  user: 'root',
-  password: 'Integradora',
-  database: 'railway'
-});
+ conectarBd(){
+        this.con = mysql.createPool({
+            host: "localhost",
+            user: "root",
+            password: "Sitio123",
+            database: "pdr01"
+        });
+
 
         /* this.con.connect(function(err) {
         if (err) throw err;
