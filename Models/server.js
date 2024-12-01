@@ -2,6 +2,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 
@@ -19,25 +20,22 @@ class Server {
 
     // Configura la conexión a la base de datos
    conectarBd() {
-        this.connection = mysql.createPool({
-    host: 'autorack.proxy.rlwy.net',
-    port: 36407,
-    user: 'root',
-    password: 'Integradora',
-    database: 'railway',
-    connectionLimit: 10, // Límite de conexiones simultáneas
-    waitForConnections: true,
-    queueLimit: 0,
-    connectTimeout: 10000, 
+         this.connection = mysql.createPool({
+            host: 'autorack.proxy.rlwy.net',
+            port: 36407,
+            user: 'root',
+            password: 'Integradora',
+            database: 'railway',
         });
 
-        // Prueba la conexión a la base de datos
-        this.connection.on('error', (err) => {
-    console.error('Error en la conexión de la base de datos:', err.message);
-    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-        this.conectarBd(); // Reconecta si se pierde la conexión
-    }
-});
+        // Verifica la conexión a la base de datos
+        this.connection.getConnection((err) => {
+            if (err) {
+                console.error('Error al conectar a la base de datos:', err.message);
+            } else {
+                console.log('Conexión a la base de datos establecida correctamente');
+            }
+        });
     }
 
 
@@ -51,14 +49,25 @@ class Server {
         this.app.use(express.urlencoded({ extended: true })); // Permite manejar datos codificados en URL
         this.app.use(express.static('./public')); // Configura la carpeta de archivos estáticos
         this.app.set('view engine', 'ejs'); // Configura EJS como motor de vistas
-
+        const sessionStore = new MySQLStore({
+            host: 'autorack.proxy.rlwy.net',
+            port: 36407,
+            user: 'root',
+            password: 'Integradora',
+            database: 'railway',
+        });
         // Configuración de sesión
         this.app.use(
             session({
-                secret: 'clave_secreta', // Cambia esto por algo más seguro en producción
+                key: 'session_cookie_name',
+                secret: 'clave_secreta_para_produccion', // Cambia esto por algo más seguro
+                store: sessionStore,
                 resave: false,
-                saveUninitialized: true,
-                cookie: { secure: false },
+                saveUninitialized: false,
+                cookie: {
+                    secure: false, // Cambiar a true si usas HTTPS
+                    maxAge: 1000 * 60 * 60, // 1 hora
+                },
             })
         );
     }
