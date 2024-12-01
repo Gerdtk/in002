@@ -5,24 +5,17 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 
-class Server{
-    constructor(){
+class Server {
+    constructor() {
         this.app = express();
-        this.port = process.env.PORT;
+        this.port = process.env.PORT || 3000; // Establece un puerto predeterminado
+        this.connection = null; // Inicializamos la conexión como null
 
         this.middlewares();
         this.routes();
-        this.listen();
         this.conectarBd();
-
+        this.listen();
     }
-    const connection = mysql.createPool({
-  host: 'autorack.proxy.rlwy.net',
-  port: 36407,
-  user: 'root',
-  password: 'Integradora',
-  database: 'railway'
-});
 
 
         /* this.con.connect(function(err) {
@@ -43,6 +36,24 @@ class Server{
             saveUninitialized: true, 
             cookie: { secure: false }
         }));
+    }
+conectarBd() {
+        this.connection = mysql.createPool({
+            host: 'autorack.proxy.rlwy.net',
+            port: 36407,
+            user: 'root',
+            password: 'Integradora',
+            database: 'railway',
+        });
+
+        // Probar la conexión
+        this.connection.getConnection((err) => {
+            if (err) {
+                console.error('Error al conectar a la base de datos:', err.message);
+            } else {
+                console.log('Conexión a la base de datos establecida correctamente');
+            }
+        });
     }
     routes(){
         this.app.post("/login", (req, res) => {
