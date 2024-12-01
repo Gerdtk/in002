@@ -5,21 +5,22 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 
-class Server {
-    constructor() {
+class Server{
+    constructor(){
         this.app = express();
-        this.port = process.env.PORT || 3000;
+        this.port = process.env.PORT;
 
-        this.conectarBd(); // Conexión primero
         this.middlewares();
         this.routes();
         this.listen();
+        this.conectarBd();
+
     }
-    conectarBd() {
+ conectarBd(){
         this.con = mysql.createPool({
             host: "localhost",
-            user: "Admin",
-            password: "Sus50!",
+            user: "root",
+            password: "Sitio123",
             database: "pdr01"
         });
 
@@ -43,6 +44,7 @@ class Server {
             cookie: { secure: false }
         }));
     }
+
     routes(){
         this.app.post("/login", (req, res) => {
             let user = req.body.usuario;
@@ -382,3 +384,5 @@ class Server {
     }
 
 }
+module.exports = Server;
+
