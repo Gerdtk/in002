@@ -5,16 +5,16 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 
-class Server {
-    constructor() {
+class Server{
+    constructor(){
         this.app = express();
-        this.port = process.env.PORT || 3000; // Establece un puerto predeterminado
-        this.connection = null; // Inicializamos la conexión como null
+        this.port = process.env.PORT;
 
         this.middlewares();
         this.routes();
-        this.conectarBd();
         this.listen();
+        this.conectarBd();
+
     }
 const connection = mysql.createPool({
   host: 'autorack.proxy.rlwy.net',
@@ -44,16 +44,6 @@ const connection = mysql.createPool({
         }));
     }
 
-
-        // Probar la conexión
-        this.connection.getConnection((err) => {
-            if (err) {
-                console.error('Error al conectar a la base de datos:', err.message);
-            } else {
-                console.log('Conexión a la base de datos establecida correctamente');
-            }
-        });
-    }
     routes(){
         this.app.post("/login", (req, res) => {
             let user = req.body.usuario;
