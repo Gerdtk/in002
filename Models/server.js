@@ -17,7 +17,7 @@ class Server{
 
     }
     const connection = mysql.createPool({
-  host: 'autorack.proxy.rlwy.net', // Cambia localhost por el host remoto
+  host: 'autorack.proxy.rlwy.net',
   port: 36407,
   user: 'root',
   password: 'Integradora',
