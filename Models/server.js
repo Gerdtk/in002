@@ -5,47 +5,66 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 
-class Server{
-    constructor(){
+class Server {
+    constructor() {
         this.app = express();
-        this.port = process.env.PORT;
+        this.port = process.env.PORT || 3000; // Usa un puerto predeterminado si no está definido en las variables de entorno
+        this.connection = null; // Inicializa la conexión como null
 
-        this.middlewares();
-        this.routes();
-        this.listen();
-        this.conectarBd();
-
+        this.conectarBd(); // Establece conexión con la base de datos
+        this.middlewares(); // Configura los middlewares
+        this.routes(); // Configura las rutas
+        this.listen(); // Inicia el servidor
     }
- conectarBd(){
-        this.con = mysql.createPool({
-            host: "localhost",
-            user: "root",
-            password: "Sitio123",
-            database: "pdr01"
+
+    // Configura la conexión a la base de datos
+    conectarBd() {
+        this.connection = mysql.createPool({
+            host: 'autorack.proxy.rlwy.net',
+            port: 36407,
+            user: 'root',
+            password: 'Integradora',
+            database: 'railway',
         });
 
+        // Prueba la conexión a la base de datos
+        this.connection.getConnection((err) => {
+            if (err) {
+                console.error('Error al conectar a la base de datos:', err.message);
+            } else {
+                console.log('Conexión a la base de datos establecida correctamente');
+            }
+        });
+    }
 
         /* this.con.connect(function(err) {
         if (err) throw err;
         console.log("Connected!"); // funicion callback
         }); */
-    }
-    middlewares(){
-        this.app.use(cors());
-        this.app.use(express.static('./public'));
-        this.app.use(express.json());
-        this.app.use(express.urlencoded({extended:true}));
-        this.app.set("view engine","ejs");
-        this.app.set("trust proxy");
-        this.app.use(session({ 
-            secret: 'clave',
-            resave: false,
-            saveUninitialized: true, 
-            cookie: { secure: false }
-        }));
+    middlewares() {
+        this.app.use(cors()); // Habilita CORS
+        this.app.use(express.json()); // Permite el manejo de JSON
+        this.app.use(express.urlencoded({ extended: true })); // Permite manejar datos codificados en URL
+        this.app.use(express.static('./public')); // Configura la carpeta de archivos estáticos
+        this.app.set('view engine', 'ejs'); // Configura EJS como motor de vistas
+
+        // Configuración de sesión
+        this.app.use(
+            session({
+                secret: 'clave_secreta', // Cambia esto por algo más seguro en producción
+                resave: false,
+                saveUninitialized: true,
+                cookie: { secure: false },
+            })
+        );
     }
 
+
     routes(){
+        this.app.get('/', (req, res) => {
+            res.send('Servidor funcionando correctamente');
+        });
+       
         this.app.post("/login", (req, res) => {
             let user = req.body.usuario;
             let pass = req.body.Cont;
