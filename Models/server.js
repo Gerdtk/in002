@@ -45,12 +45,7 @@ class Server{
         }));
     }
 
-
     routes(){
-        this.app.get('/', (req, res) => {
-            res.send('Servidor funcionando correctamente');
-        });
-       
         this.app.post("/login", (req, res) => {
             let user = req.body.usuario;
             let pass = req.body.Cont;
