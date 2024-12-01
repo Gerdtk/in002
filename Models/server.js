@@ -20,21 +20,24 @@ class Server {
     // Configura la conexión a la base de datos
    conectarBd() {
         this.connection = mysql.createPool({
-            host: 'autorack.proxy.rlwy.net',
-            port: 36407,
-            user: 'root',
-            password: 'Integradora',
-            database: 'railway',
+    host: 'autorack.proxy.rlwy.net',
+    port: 36407,
+    user: 'root',
+    password: 'Integradora',
+    database: 'railway',
+    connectionLimit: 10, // Límite de conexiones simultáneas
+    waitForConnections: true,
+    queueLimit: 0,
+    connectTimeout: 10000, 
         });
 
         // Prueba la conexión a la base de datos
-        this.connection.getConnection((err) => {
-            if (err) {
-                console.error('Error al conectar a la base de datos:', err.message);
-            } else {
-                console.log('Conexión a la base de datos establecida correctamente');
-            }
-        });
+        this.connection.on('error', (err) => {
+    console.error('Error en la conexión de la base de datos:', err.message);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+        this.conectarBd(); // Reconecta si se pierde la conexión
+    }
+});
     }
 
 
