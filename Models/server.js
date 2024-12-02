@@ -1,21 +1,40 @@
-
 const express = require('express');
 const mysql = require('mysql');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
+const { exec } = require('child_process');
 
-class Server{
-    constructor(){
+// Clase Server
+class Server {
+    constructor() {
         this.app = express();
-        this.port = process.env.PORT;
+        this.port = process.env.PORT || 3000;
 
+        // Inicializar funciones principales
+        this.conectarBd();
         this.middlewares();
         this.routes();
-        this.listen();
-        this.conectarBd();
 
+        // Ejecutar importación de base de datos
+        this.initDatabase();
+
+        // Iniciar el servidor
+        this.listen();
     }
+
+    // Método para importar la base de datos
+    initDatabase() {
+        console.log('Importando base de datos...');
+        exec('mysql -u root -pIntegradora -h mysql.railway.internal -P 3306 railway < backup.sql', (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error al importar: ${error.message}`);
+                return;
+            }
+            console.log(`Importación completada: ${stdout}`);
+        });
+    }
+
  conectarBd(){
         this.con = mysql.createPool({
             host: "localhost",
