@@ -37,10 +37,10 @@ class Server {
 
  conectarBd(){
         this.con = mysql.createPool({
-            host: "localhost",
+            host: "mysql.railway.internal",
             user: "root",
-            password: "Sitio123",
-            database: "pdr01"
+            password: "Integradora",
+            database: "railway"
         });
 
 
